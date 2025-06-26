@@ -3,6 +3,7 @@ use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use crate::check_answer::check_answer;
 use crate::file::*;
 use crate::html::*;
+use crate::question::Question;
 use crate::question_result::QuestionResult;
 use crate::read_form::read_form;
 use crate::utils::*;
@@ -66,7 +67,7 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
         Err(e) => return get_error_html(e)
     };
 
-    if veto {
+    if veto && state.reviews {
         let guess_count = state.previous_correct_guesses + 1;
         set_guess_counter(&mut words, &state.previous_word, guess_count);
         if let Some(err) = write_file(&state, &words) {
@@ -75,7 +76,10 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
         return get_html(&current_word, &state.question_type, QuestionResult::None);
     }
 
-    let correction = check_answer(answer, tones, &current_word, &state.question_type);
+    let correction = match veto {
+        true => None,
+        false => check_answer(answer, tones, &current_word, &state.question_type)
+    };
     let update_ok = update_counter(&mut words, &state, current_word.correct_guesses,
         correction.is_none());
     if !update_ok {
@@ -83,6 +87,7 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
             "Failed to update guess counter. Word {} not found in the list", &state.current_word));
     }
 
+    let prev_q = state.question_type.clone();
     let word_count_limit = get_word_limit(&state, &words);
     state.update(correction.is_none(), current_word.correct_guesses, word_count_limit);
 
@@ -92,9 +97,10 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
     };
     state.current_word = next_word.chinese.clone();
 
-    let question_result = match correction {
-        None => QuestionResult::Correct,
-        Some(x) => QuestionResult::Incorrect(x)
+    let question_result = match (correction, prev_q) {
+        (_, Question::AllRevealed) => QuestionResult::None,
+        (None, _) => QuestionResult::Correct,
+        (Some(x), _) => QuestionResult::Incorrect(x)
     };
 
     if let Some(err) = write_file(&state, &words) {

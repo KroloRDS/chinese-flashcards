@@ -7,6 +7,7 @@ pub enum Question {
 	Reading,
 	Writing
 }
+
 static FOR_REVIEW: [Question; 3] = [Question::Meaning, Question::Reading, Question::Writing];
 
 impl Question {

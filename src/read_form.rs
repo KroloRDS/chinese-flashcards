@@ -1,7 +1,7 @@
 pub fn read_form(data: &str) -> (String, String, bool) {
 	let data = data.trim().to_lowercase();
 	let lines = data.split('&').collect::<Vec<_>>();
-	return (get_answer(&lines), get_tones(&lines), false);
+	return (get_answer(&lines), get_tones(&lines), get_veto(&lines));
 }
 
 fn get_answer(lines: &Vec<&str>) -> String {
@@ -11,6 +11,10 @@ fn get_answer(lines: &Vec<&str>) -> String {
 		None => String::new(),
 		Some(x) => x[name.len()..].to_string()
 	};
+}
+
+fn get_veto(lines: &Vec<&str>) -> bool {
+	lines.iter().any(|line| line.starts_with("veto"))
 }
 
 fn get_tones(lines: &Vec<&str>) -> String {

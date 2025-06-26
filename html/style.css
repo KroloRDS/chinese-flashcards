@@ -36,7 +36,7 @@ div, form {
     font-size: 20px;
 }
 
-.answer-container {
+.margin-top {
     margin-top: 20px;
 }
 
@@ -60,12 +60,22 @@ div, form {
     width: 100px;
 }
 
+.veto-button {
+    background-color: crimson;
+    font-size: 15px;
+    height: 30px;
+    width: 60px;
+}
+
+.btn-blue {
+    background-color: DodgerBlue;
+}
+
 .button {
     border-color: white;
     border-radius: 15px;
     border-style: solid;
 
-    background-color: DodgerBlue;
     color: white;
     font-weight: bold;
 }

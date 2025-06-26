@@ -21,7 +21,6 @@ pub fn get_html(word: &Word, question: &Question, result: QuestionResult) -> Str
 fn question_result(result: QuestionResult) -> String {
 	let mut txt = String::new();
 
-
 	match result {
 		QuestionResult::None => {}
 		QuestionResult::Correct => txt.push_str(div(
@@ -29,6 +28,7 @@ fn question_result(result: QuestionResult) -> String {
 		QuestionResult::Incorrect(x) => {
 			let message = format!("That was INCORRECT!<br>Expected: {}", x);
 			txt.push_str(div("incorrect", &message).as_str());
+			txt.push_str(include_str!("../html/veto-button.html"));
 		}
 	}
 
@@ -70,7 +70,6 @@ fn random_font(text: &str) -> String {
 
 fn form(word: &Word, question: &Question) -> String {
 	let mut result = String::new();
-	result.push_str("<form method=\"post\">");
 
 	let input = include_str!("../html/normal-input.html");
 	match question {
@@ -89,7 +88,6 @@ fn form(word: &Word, question: &Question) -> String {
 		Question::Writing => result.push_str(include_str!("../html/big-input.html"))
 	}
 
-	result.push_str("</form>");
 	return result;
 }
 
