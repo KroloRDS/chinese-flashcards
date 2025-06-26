@@ -1,0 +1,96 @@
+body {
+    background-color: #0f0033;
+    font-family: "Helvetica", sans-serif;
+    padding: 2%;
+    text-align: center;
+}
+
+div, form {
+    color: white;
+}
+
+.correct {
+    color: lime;
+    font-weight: bold;
+}
+
+.incorrect {
+    color: crimson;
+    font-weight: bold;
+}
+
+.chinese-text {
+    font-size: 200px;
+}
+
+.pinyin-text {
+    font-size: 55px;
+    font-style: italic;
+}
+
+.translation-text {
+    font-size: 25px;
+}
+
+.clarification-text {
+    font-size: 20px;
+}
+
+.answer-container {
+    margin-top: 20px;
+}
+
+.writing-input-container {
+    height: 50px;
+}
+
+.writing-input {
+    font-size: 40px;
+    width: 15%;
+}
+
+.writing-input-button {
+    height: 120%;
+    vertical-align: top;
+}
+
+.next-button {
+    font-size: 20px;
+    height: 40px;
+    width: 100px;
+}
+
+.button {
+    border-color: white;
+    border-radius: 15px;
+    border-style: solid;
+
+    background-color: DodgerBlue;
+    color: white;
+    font-weight: bold;
+}
+
+input[type="radio"] {
+    display: none;
+}
+
+input[type="radio"]:checked + .radio-label {
+    background-color: lime;
+    color: white;
+}
+
+.radio-label {
+    display: inline-block;
+
+    margin-bottom: 15px;
+    margin-right: 10px;
+    padding: 0 10px;
+
+    border: 2px solid #ddd;
+    border-radius: 15px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+    font-size: 20px;
+}
