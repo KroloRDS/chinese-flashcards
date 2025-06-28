@@ -13,16 +13,24 @@ impl State {
 	pub fn update(&mut self, answer_correct: bool, previous_correct_guesses: u16, word_limit: u8) {
 		self.previous_correct_guesses = previous_correct_guesses;
 		self.previous_word = self.current_word.clone();
+
 		if self.should_inc_word_count(answer_correct) {
 			self.word_number += 1;
 		}
-		if self.word_number >= word_limit {
-			self.word_number = 0;
-			self.reviews = !self.reviews;
+
+		if self.word_number < word_limit {
+			if self.reviews || answer_correct {
+				self.question_type = self.question_type.next(self.reviews);
+			}
+			return;
 		}
-		if self.reviews || answer_correct {
-			self.question_type = self.question_type.next(self.reviews);
-		}
+
+		self.word_number = 0;
+		self.reviews = !self.reviews;
+		self.question_type = match self.reviews {
+			true => self.question_type.next(true),
+			false =>Question::AllRevealed
+		};
 	}
 
 	fn should_inc_word_count(&self, answer_correct: bool) -> bool {
