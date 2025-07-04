@@ -1,4 +1,5 @@
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
+use local_ip_address::local_ip;
 
 use crate::check_answer::check_answer;
 use crate::file::*;
@@ -22,27 +23,47 @@ mod read_form;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let port = port();
-    println!("Listening on port {}", port);
-    HttpServer::new(|| App::new()
+    let mut server = HttpServer::new(|| App::new()
         .service(get)
         .service(post))
-        .bind(("127.0.0.1", port))?
-        .run()
-        .await
+        .bind(("127.0.0.1", port))?;
+
+    match local_ip().and_then(|x| Ok(x.to_string())) {
+        Ok(ip) => {
+            println!("Listening on {}:{}", ip, port);
+            server = server.bind((ip, port))?;
+        }
+        Err(e) => {
+            eprintln!("Failed to get local IP address: {}", e);
+            println!("Listening on 127.0.0.1:{}", port);
+        }
+    }
+    server.run().await
 }
 
 fn port() -> u16 {
+    let default_port = 8080;
     let args: Vec<String> = std::env::args().collect();
-    return args.iter()
-        .enumerate()
-        .find_map(|(i, arg)| {
-            if arg == "-p" || arg == "--port" {
-                args.get(i + 1).and_then(|p| p.parse::<u16>().ok())
-            } else {
-                None
-            }
-        })
-        .unwrap_or(8080);
+    let index = match args.iter().position(|x| x == "-p" || x == "--port") {
+        None => return default_port,
+        Some(x) => x
+    };
+
+    let arg = match args.get(index + 1) {
+        None => {
+            eprintln!("Missing number argument after port");
+            return default_port;
+        }
+        Some(x) => x
+    };
+
+    return match arg.parse::<u16>() {
+        Ok(x) =>  x,
+        Err(_) => {
+            eprintln!("Could not parse {} as port number", arg);
+            default_port
+        }
+    };
 }
 
 #[get("/")]
