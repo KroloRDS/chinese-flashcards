@@ -10,7 +10,7 @@ pub fn add_tone_marks(latin: &str, tones: &str) -> String {
 }
 
 fn add_tone_mark(s: &str, tone: char) -> String {
-	let mut index = s.len() - 1;
+	let mut index = s.chars().count() - 1;
 	let mut result = String::new();
 	let mut ending = String::new();
 
@@ -18,7 +18,8 @@ fn add_tone_mark(s: &str, tone: char) -> String {
 		index -= 2;
 		ending = "ng".to_string();
 	}
-	else if s.ends_with("ao") || s.ends_with("ou") || s.ends_with('n') {
+	else if s.ends_with("ao") || s.ends_with("ou") ||
+	s.ends_with("ei") || s.ends_with('n') {
 		index -= 1;
 		if let Some(c) = s.chars().last() {
 			ending = c.to_string();

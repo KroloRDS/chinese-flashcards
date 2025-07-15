@@ -15,9 +15,9 @@ impl Question {
 		return match reviews {
 			true => FOR_REVIEW.choose(&mut rand::rng()).unwrap().clone(),
 			false => match self {
-				Self::AllRevealed => Self::Meaning,
-				Self::Meaning => Self::Reading,
-				Self::Reading => Self::Writing,
+				Self::AllRevealed => Self::Reading,
+				Self::Reading => Self::Meaning,
+				Self::Meaning => Self::Writing,
 				Self::Writing => Self::AllRevealed
 			}
 		}
