@@ -1,6 +1,6 @@
 #[derive(Clone)]
 pub struct Word {
-	pub correct_guesses: u16,
+	pub learn_state: LearnState,
 	pub chinese: String,
 	pub latin: String,
 	pub tones: String,
@@ -8,10 +8,35 @@ pub struct Word {
 	pub clarification: String
 }
 
+#[derive(Clone)]
+pub enum LearnState {
+	NotLearnt,
+	Learnt,
+	ForReview
+}
+
+impl LearnState {
+	pub fn serialize(&self) -> String {
+		match self {
+			LearnState::NotLearnt => "0",
+			LearnState::Learnt => "2",
+			LearnState::ForReview => "1",
+		}.to_string()
+	}
+
+	pub fn deserialize(str: String) -> LearnState {
+		match str.trim() {
+			"1" => LearnState::ForReview,
+			"2" => LearnState::Learnt,
+			_ => LearnState::NotLearnt
+		}
+	}
+}
+
 impl Word {
 	pub fn serialize(&self) -> String {
 		return format!("{}\t{}\t{}\t{}\t{}\t{}",
-			self.correct_guesses,
+			self.learn_state.serialize(),
 			self.chinese,
 			self.latin,
 			self.tones,
@@ -27,8 +52,8 @@ impl Word {
 			tones: Self::get_field_n(&fields, 3),
 			translation: Self::get_field_n(&fields, 4),
 			clarification: Self::get_field_n(&fields, 5),
-			correct_guesses: Self::get_field_n(&fields, 0)
-				.parse::<u16>().unwrap_or(0)
+			learn_state: LearnState::deserialize(
+				Self::get_field_n(&fields, 0))
 		};
 	}
 

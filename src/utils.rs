@@ -2,7 +2,7 @@ use rand::prelude::IndexedRandom;
 use crate::file::read_file;
 use crate::question::Question;
 use crate::state::State;
-use crate::word::Word;
+use crate::word::{LearnState, Word};
 
 pub fn get_state() -> Result<(Word, Vec<Word>, State), String> {
 	let (state, words) = match read_file() {
@@ -16,52 +16,56 @@ pub fn get_state() -> Result<(Word, Vec<Word>, State), String> {
 	}
 }
 
-pub fn get_next_word(state: &State, words: &Vec<Word>) -> Option<Word> {
+pub fn get_next_word(state: &State, words: &mut Vec<Word>) -> Option<Word> {
 	if !state.reviews {
-		return words.iter().find(|word| word.correct_guesses == 0).cloned()
+		return words.iter().find(|word| matches!(word.learn_state, LearnState::NotLearnt)).cloned()
 	}
 
-	let mut min = u16::MAX;
-	let mut min_words: Vec<Word> = Vec::new();
+	let for_review = words.iter()
+		.filter(|word| matches!(word.learn_state, LearnState::ForReview))
+		.collect::<Vec<_>>();
 
-	for word in words.iter() {
-		if word.correct_guesses == 0 {
-			continue;
-		}
-		else if word.correct_guesses < min {
-			min = word.correct_guesses;
-			min_words = vec![word.clone()];
-		}
-		else if word.correct_guesses == min {
-			min_words.push(word.clone());
-		}
+	if !for_review.is_empty() {
+		return for_review.choose(&mut rand::rng()).cloned().cloned();
 	}
 
-	return min_words.choose(&mut rand::rng()).cloned();
+	let mut learnt = words.iter_mut()
+		.filter(|word| matches!(word.learn_state, LearnState::Learnt))
+		.collect::<Vec<_>>();
+
+	learnt.iter_mut().for_each(|x| x.learn_state = LearnState::ForReview);
+	return learnt.choose(&mut rand::rng()).map(|x| Word {
+		learn_state: x.learn_state.clone(),
+		chinese: x.chinese.clone(),
+		latin: x.latin.clone(),
+		tones: x.tones.clone(),
+		translation: x.translation.clone(),
+		clarification: x.clarification.clone(),
+	});
 }
 
 pub fn find_word(chinese: &str, words: &Vec<Word>) -> Option<Word> {
 	words.iter().find(|word| word.chinese == chinese).cloned()
 }
 
-pub fn update_counter(mut words: &mut Vec<Word>, state: &State,
-	correct_guesses: u16, answer_correct: bool
+pub fn update_learnt_state(mut words: &mut Vec<Word>,
+	state: &State, answer_correct: bool
 ) -> bool {
 	if !state.reviews && !matches!(state.question_type, Question::Writing) {
 		return true;
 	}
 
-	let counter = match answer_correct {
-		true => correct_guesses + 1,
-		false => 0
+	let learnt_state = match answer_correct {
+		true => LearnState::Learnt,
+		false => LearnState::NotLearnt
 	};
-	return set_guess_counter(&mut words, &state.current_word, counter);
+	return set_learn_state(&mut words, &state.current_word, learnt_state);
 }
 
-pub fn set_guess_counter(words: &mut Vec<Word>, chinese: &str, value: u16) -> bool {
+pub fn set_learn_state(words: &mut Vec<Word>, chinese: &str, state: LearnState) -> bool {
 	for word in words.iter_mut() {
 		if word.chinese == chinese {
-			word.correct_guesses = value;
+			word.learn_state = state;
 			return true;
 		}
 	}
@@ -73,6 +77,9 @@ pub fn get_word_limit(state: &State, words: &Vec<Word>) -> u8 {
 		return 3;
 	}
 	
-	let learnt_words = words.iter().filter(|word| word.correct_guesses > 0).count();
+	let learnt_words = words.iter()
+		.filter(|word| !matches!(word.learn_state, LearnState::NotLearnt))
+		.count();
+
 	return (learnt_words as f64).sqrt().ceil() as u8;
 }

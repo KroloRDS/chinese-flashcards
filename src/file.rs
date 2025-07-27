@@ -72,6 +72,8 @@ fn open_file(options: &OpenOptions) -> Result<File, String> {
 }
 
 fn err(ctx: ErrorContext) -> String {
+	println!("{:?}", ctx.error);
+	println!("at {} {}:{}", ctx.file, ctx.line, ctx.column);
 	eprintln!("{:?}", ctx.error);
 	eprintln!("at {} {}:{}", ctx.file, ctx.line, ctx.column);
 	return ctx.to_display;

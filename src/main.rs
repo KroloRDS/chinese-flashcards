@@ -8,6 +8,7 @@ use crate::question::Question;
 use crate::question_result::QuestionResult;
 use crate::read_form::read_form;
 use crate::utils::*;
+use crate::word::LearnState;
 
 mod question;
 mod word;
@@ -89,8 +90,7 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
     };
 
     if veto && state.reviews {
-        let guess_count = state.previous_correct_guesses + 1;
-        set_guess_counter(&mut words, &state.previous_word, guess_count);
+        set_learn_state(&mut words, &state.previous_word, LearnState::Learnt);
         if let Some(err) = write_file(&state, &words) {
             return get_error_html(err);
         }
@@ -101,18 +101,17 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
         true => None,
         false => check_answer(answer, tones, &current_word, &state.question_type)
     };
-    let update_ok = update_counter(&mut words, &state, current_word.correct_guesses,
-        correction.is_none());
+    let update_ok = update_learnt_state(&mut words, &state, correction.is_none());
     if !update_ok {
         return get_error_html(format!(
-            "Failed to update guess counter. Word {} not found in the list", &state.current_word));
+            "Failed to update learnt state. Word {} not found in the list", &state.current_word));
     }
 
     let prev_q = state.question_type.clone();
     let word_count_limit = get_word_limit(&state, &words);
-    state.update(correction.is_none(), current_word.correct_guesses, word_count_limit);
+    state.update(correction.is_none(), word_count_limit);
 
-    let next_word = match get_next_word(&state, &words) {
+    let next_word = match get_next_word(&state, &mut words) {
         Some(x) => x,
         None => return get_error_html(String::from("Failed to get new randomised word"))
     };

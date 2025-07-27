@@ -1,7 +1,6 @@
 use crate::question::Question;
 
 pub struct State {
-	pub previous_correct_guesses: u16,
 	pub previous_word: String,
 	pub current_word: String,
 	pub question_type: Question,
@@ -10,8 +9,7 @@ pub struct State {
 }
 
 impl State {
-	pub fn update(&mut self, answer_correct: bool, previous_correct_guesses: u16, word_limit: u8) {
-		self.previous_correct_guesses = previous_correct_guesses;
+	pub fn update(&mut self, answer_correct: bool, word_limit: u8) {
 		self.previous_word = self.current_word.clone();
 
 		if self.should_inc_word_count(answer_correct) {
@@ -45,8 +43,7 @@ impl State {
 	}
 
 	pub fn serialize(&self) -> String {
-		return format!("{}\t{}\t{}\t{}\t{}\t{}",
-			self.previous_correct_guesses,
+		return format!("{}\t{}\t{}\t{}\t{}",
 			self.previous_word,
 			self.current_word,
 			self.question_type.serialize(),
@@ -57,14 +54,12 @@ impl State {
 	pub fn deserialize(str: &str) -> Self {
 		let fields: Vec<&str> = str.split('\t').collect();
 		return Self {
-			previous_correct_guesses: Self::get_field_n(&fields, 0)
-				.parse::<u16>().unwrap_or(0),
-			previous_word: Self::get_field_n(&fields, 1),
-			current_word: Self::get_field_n(&fields, 2),
-			question_type: Question::deserialize(&Self::get_field_n(&fields, 3)),
-			reviews: Self::get_field_n(&fields, 4)
+			previous_word: Self::get_field_n(&fields, 0),
+			current_word: Self::get_field_n(&fields, 1),
+			question_type: Question::deserialize(&Self::get_field_n(&fields, 2)),
+			reviews: Self::get_field_n(&fields, 3)
 				.parse::<bool>().unwrap_or(true),
-			word_number: Self::get_field_n(&fields, 5)
+			word_number: Self::get_field_n(&fields, 4)
 				.parse::<u8>().unwrap_or(0),
 		};
 	}
