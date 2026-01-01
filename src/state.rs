@@ -5,6 +5,7 @@ pub struct State {
 	pub current_word: String,
 	pub question_type: Question,
 	pub reviews: bool,
+	pub allow_word_pool_increase: bool,
 	pub word_number: u8
 }
 
@@ -43,11 +44,12 @@ impl State {
 	}
 
 	pub fn serialize(&self) -> String {
-		return format!("{}\t{}\t{}\t{}\t{}",
+		return format!("{}\t{}\t{}\t{}\t{}\t{}",
 			self.previous_word,
 			self.current_word,
 			self.question_type.serialize(),
 			self.reviews,
+			self.allow_word_pool_increase,
 			self.word_number);
 	}
 
@@ -59,7 +61,9 @@ impl State {
 			question_type: Question::deserialize(&Self::get_field_n(&fields, 2)),
 			reviews: Self::get_field_n(&fields, 3)
 				.parse::<bool>().unwrap_or(true),
-			word_number: Self::get_field_n(&fields, 4)
+			allow_word_pool_increase: Self::get_field_n(&fields, 4)
+				.parse::<bool>().unwrap_or(true),
+			word_number: Self::get_field_n(&fields, 5)
 				.parse::<u8>().unwrap_or(0),
 		};
 	}

@@ -12,7 +12,8 @@ pub struct Word {
 pub enum LearnState {
 	NotLearnt,
 	Learnt,
-	ForReview
+	ForReview,
+	Forgotten
 }
 
 impl LearnState {
@@ -21,6 +22,7 @@ impl LearnState {
 			LearnState::NotLearnt => "0",
 			LearnState::Learnt => "2",
 			LearnState::ForReview => "1",
+			LearnState::Forgotten => "3"
 		}.to_string()
 	}
 
@@ -28,6 +30,7 @@ impl LearnState {
 		match str.trim() {
 			"1" => LearnState::ForReview,
 			"2" => LearnState::Learnt,
+			"3" => LearnState::Forgotten,
 			_ => LearnState::NotLearnt
 		}
 	}

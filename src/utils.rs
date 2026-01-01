@@ -18,7 +18,13 @@ pub fn get_state() -> Result<(Word, Vec<Word>, State), String> {
 
 pub fn get_next_word(state: &State, words: &mut Vec<Word>) -> Option<Word> {
 	if !state.reviews {
-		return words.iter().find(|word| matches!(word.learn_state, LearnState::NotLearnt)).cloned()
+		return words.iter().find(|word| 
+			match word.learn_state {
+				LearnState::NotLearnt => state.allow_word_pool_increase,
+				LearnState::Forgotten => true,
+				_ => false
+			}
+		).cloned();
 	}
 
 	let for_review = words.iter()
@@ -57,7 +63,7 @@ pub fn update_learnt_state(mut words: &mut Vec<Word>,
 
 	let learnt_state = match answer_correct {
 		true => LearnState::Learnt,
-		false => LearnState::NotLearnt
+		false => LearnState::Forgotten
 	};
 	return set_learn_state(&mut words, &state.current_word, learnt_state);
 }
@@ -70,16 +76,4 @@ pub fn set_learn_state(words: &mut Vec<Word>, chinese: &str, state: LearnState) 
 		}
 	}
 	return false;
-}
-
-pub fn get_word_limit(state: &State, words: &Vec<Word>) -> u8 {
-	if !state.reviews {
-		return 3;
-	}
-	
-	let learnt_words = words.iter()
-		.filter(|word| !matches!(word.learn_state, LearnState::NotLearnt))
-		.count();
-
-	return (learnt_words as f64).sqrt().ceil() as u8;
 }
