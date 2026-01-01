@@ -89,7 +89,7 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
 		Err(e) => return get_error_html(e)
 	};
 
-	if veto && state.reviews {
+	if veto && (state.reviews || matches!(state.question_type, Question::AllRevealed)) {
 		set_learn_state(&mut words, &state.previous_word, LearnState::Learnt);
 		if let Some(err) = write_file(&state, &words) {
 			return get_error_html(err);
