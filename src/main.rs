@@ -2,6 +2,7 @@ use actix_web::{App, HttpResponse, HttpServer, Responder, get, post};
 use local_ip_address::local_ip;
 
 use crate::check_answer::check_answer;
+use crate::new_dict_entry::dict_test;
 use crate::file::*;
 use crate::html::*;
 use crate::question::Question;
@@ -13,6 +14,7 @@ use crate::word::LearnState;
 mod check_answer;
 mod file;
 mod html;
+mod new_dict_entry;
 mod question;
 mod question_result;
 mod read_form;
@@ -26,7 +28,8 @@ async fn main() -> std::io::Result<()> {
 	let port = port();
 	let mut server = HttpServer::new(|| App::new()
 		.service(get)
-		.service(post))
+		.service(post)
+		.service(test))
 		.bind(("127.0.0.1", port))?;
 
 	match local_ip().and_then(|x| Ok(x.to_string())) {
@@ -130,4 +133,10 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
 		return get_error_html(err);
 	}
 	return get_html(&next_word, &state.question_type, question_result);
+}
+
+#[get("/test/")]
+async fn test() -> impl Responder {
+	let res = dict_test("謝謝").await;
+	HttpResponse::Ok().body(res.unwrap_or("ERR".to_string()))
 }

@@ -84,3 +84,20 @@ fn add_tone_to_char(char: char, tone: char) -> char {
 		c => c
 	}
 }
+
+pub fn remove_tone_marks(s: String) -> String {
+	return s.chars().map(|c| remove_tone_mark(c))
+		.collect::<String>();
+}
+
+fn remove_tone_mark(c: char) -> char {
+	match c {
+		'ā' | 'á' | 'ǎ' | 'à' => 'a',
+		'ē' | 'é' | 'ě' | 'è' => 'e',
+		'ī' | 'í' | 'ǐ' | 'ì' => 'i',
+		'ō' | 'ó' | 'ǒ' | 'ò' => 'o',
+		'ū' | 'ú' | 'ǔ' | 'ù' => 'u',
+		'ǖ' | 'ǘ' | 'ǚ' | 'ǜ' => 'ü',
+		_ => c,
+	}
+}
