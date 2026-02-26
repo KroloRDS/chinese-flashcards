@@ -62,7 +62,7 @@ impl Word {
 
 	fn get_field_n(fields: &Vec<&str>, n: usize) -> String {
 		return match fields.get(n) {
-			Some(field) => field.to_string(),
+			Some(field) => field.trim().to_string(),
 			None => String::new()
 		};
 	}

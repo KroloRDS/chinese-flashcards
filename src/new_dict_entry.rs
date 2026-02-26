@@ -111,6 +111,7 @@ fn get_translation(html: &str) -> Option<String> {
 	let mut vec = html
 		.split("<strong>/</strong>")
 		.map(|x| x.trim())
+		.filter(|x| !x.starts_with("<a"))
 		.collect::<Vec<_>>();
 
 	if vec.len() == 0 {
@@ -118,8 +119,14 @@ fn get_translation(html: &str) -> Option<String> {
 	}
 
 	let mut translations = vec.remove(0).to_lowercase();
-	translations.push_str("\t");
-	translations.push_str(&vec.join("; "));
+	
+	if vec.len() == 0 {
+		translations = translations.replace("; ", "\t");
+	}
+	else {
+		translations.push_str("\t");
+		translations.push_str(&vec.join("; "));
+	}
 
 	return Some(translations);
 }

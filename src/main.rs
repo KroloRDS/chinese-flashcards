@@ -1,4 +1,4 @@
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, post};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
 use local_ip_address::local_ip;
 
 use crate::check_answer::check_answer;
@@ -135,8 +135,19 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
 	return get_html(&next_word, &state.question_type, question_result);
 }
 
-#[get("/test/")]
-async fn test() -> impl Responder {
-	let res = dict_test("謝謝").await;
-	HttpResponse::Ok().body(res.unwrap_or("ERR".to_string()))
+#[get("/add/{path}")]
+async fn test(path: web::Path<String>) -> impl Responder {
+	let word = path.into_inner();
+	let res = dict_test(&word).await;
+	let res = res.unwrap_or("ERR".to_string());
+
+	let mut body = String::from("<pre>");
+	body.push_str(res.trim());
+	body.push_str("</pre>");
+
+	let mut html = String::from(include_str!("../html/template.html"));
+	html = html.replace("&style&", "");
+	html = html.replace("&body&", &body);
+
+	HttpResponse::Ok().body(html)
 }

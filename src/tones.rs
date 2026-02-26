@@ -19,7 +19,8 @@ fn add_tone_mark(s: &str, tone: char) -> String {
 		ending = "ng".to_string();
 	}
 	else if s.ends_with("ao") || s.ends_with("ou") ||
-	s.ends_with("ai") || s.ends_with("ei") || s.ends_with('n') {
+	s.ends_with("ai") || s.ends_with("ei") ||
+	s.ends_with('n') || s.ends_with("er") {
 		index -= 1;
 		if let Some(c) = s.chars().last() {
 			ending = c.to_string();
