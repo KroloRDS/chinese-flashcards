@@ -1,5 +1,4 @@
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
-use local_ip_address::local_ip;
 
 use crate::check_answer::check_answer;
 use crate::new_dict_entry::dict_test;
@@ -26,23 +25,12 @@ mod word;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	let port = port();
-	let mut server = HttpServer::new(|| App::new()
+	HttpServer::new(|| App::new()
 		.service(get)
 		.service(post)
-		.service(test))
-		.bind(("127.0.0.1", port))?;
-
-	match local_ip().and_then(|x| Ok(x.to_string())) {
-		Ok(ip) => {
-			println!("Listening on {}:{}", ip, port);
-			server = server.bind((ip, port))?;
-		}
-		Err(e) => {
-			eprintln!("Failed to get local IP address: {}", e);
-			println!("Listening on 127.0.0.1:{}", port);
-		}
-	}
-	server.run().await
+		.service(format))
+		.bind(("::", port))?
+		.run().await
 }
 
 fn port() -> u16 {
@@ -136,7 +124,7 @@ fn get_html_from_answer(answer: &str, tones: &str, veto: bool) -> String {
 }
 
 #[get("/add/{path}")]
-async fn test(path: web::Path<String>) -> impl Responder {
+async fn format(path: web::Path<String>) -> impl Responder {
 	let word = path.into_inner();
 	let res = dict_test(&word).await;
 	let res = res.unwrap_or("ERR".to_string());
